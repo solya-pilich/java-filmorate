@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -31,16 +32,11 @@ public class FilmController {
     @PostMapping
     public Film create(@RequestBody Film film) {
         log.info("Запрос на создание фильма {}", film);
-        try {
-            validate(film);
-            film.setId(getNextId());
-            films.put(film.getId(), film);
-            log.info("Фильм создан: id={}, name={}", film.getId(), film.getName());
-            return film;
-        } catch (ValidationException e) {
-            log.warn("Ошибка валидации при создании фильма: {}", e.getMessage());
-            throw e;
-        }
+        validate(film);
+        film.setId(getNextId());
+        films.put(film.getId(), film);
+        log.info("Фильм создан: id={}, name={}", film.getId(), film.getName());
+        return film;
     }
 
     @PutMapping
@@ -48,7 +44,6 @@ public class FilmController {
         log.info("Запрос на изменение фильма {}", newFilm);
         Film oldFilm = films.get(newFilm.getId());
         if (oldFilm == null) {
-            log.warn("Фильм с id {} не найден", newFilm.getId());
             throw new NotFoundException("Фильм с id " + newFilm.getId() + " не найден");
         }
 
@@ -58,35 +53,32 @@ public class FilmController {
         Integer newDuration = newFilm.getDuration();
 
         if (newName != null && !newName.isBlank()) {
+            log.debug("Обновление названия фильма {} c {} на {}", oldFilm.getId(), oldFilm.getName(), newName);
             oldFilm.setName(newName);
-            log.debug("Обновление названия фильма на {}", newName);
         }
 
         if (newDescription != null) {
             if (newDescription.length() > MAX_LENGTH_DESCRIPTION) {
-                log.warn("Ошибка валидации, превышена максимальная длина описания");
                 throw new ValidationException("Максимальная длина описания — 200 символов");
             }
+            log.debug("Обновление описания фильма {} c {} на {}", oldFilm.getId(), oldFilm.getDescription(), newDescription);
             oldFilm.setDescription(newDescription);
-            log.debug("Обновление описания фильма на {}", newDescription);
         }
 
         if (newReleaseDate != null) {
             if (newReleaseDate.isBefore(DATE_FIRST_MOVIE)) {
-                log.warn("Ошибка валидации, указана дата релиза до 28.12.1895");
                 throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
             }
+            log.debug("Обновление даты релиза фильма {} c {} на {}", oldFilm.getId(), oldFilm.getReleaseDate(), newReleaseDate);
             oldFilm.setReleaseDate(newReleaseDate);
-            log.debug("Обновление даты релиза фильма на {}", newReleaseDate);
         }
 
         if (newDuration != null) {
             if (newDuration <= 0) {
-                log.warn("Ошибка валидации, указана продолжительность фильма меньше 1 минуты");
                 throw new ValidationException("Продолжительность фильма должна быть положительным числом");
             }
+            log.debug("Обновление продолжительности фильма {} c {} на {}", oldFilm.getId(), oldFilm.getDuration(), newDuration);
             oldFilm.setDuration(newDuration);
-            log.debug("Обновление продолжительности фильма на {}", newDuration);
         }
         log.info("Фильм {} обновлен", oldFilm);
         return oldFilm;
@@ -104,7 +96,7 @@ public class FilmController {
     }
 
     private void validate(Film film) {
-        if (film.getName() == null || film.getName().isBlank()) {
+        if (!StringUtils.hasText(film.getName())) {
             throw new ValidationException("Название не может быть пустым");
         }
         if (film.getDescription() != null && film.getDescription().length() > MAX_LENGTH_DESCRIPTION) {
