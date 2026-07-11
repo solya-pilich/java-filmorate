@@ -2,9 +2,14 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RequestBody;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -48,18 +53,15 @@ public class UserService {
     }
 
     public List<User> getAllFriends(Long userId) {
-        User user = userStorage.getById(userId);
-        return user.getFriendsIds().stream()
-                .map(userStorage::getById)
-                .collect(Collectors.toList());
+        return userStorage.getAllFriends(userId);
     }
 
     public List<User> getCommonFriends(Long userId1, Long userId2) {
-        User user1 = userStorage.getById(userId1);
-        User user2 = userStorage.getById(userId2);
+        Set<Long> users1Friends = userStorage.getFriendsIds(userId1);
+        Set<Long> users2Friends = userStorage.getFriendsIds(userId2);
 
-        Set<Long> commonsIds = user1.getFriendsIds().stream()
-                .filter(user2.getFriendsIds()::contains)
+        Set<Long> commonsIds = users1Friends.stream()
+                .filter(users2Friends::contains)
                 .collect(Collectors.toSet());
 
         if (commonsIds.isEmpty()) {
@@ -71,6 +73,44 @@ public class UserService {
         return commonsIds.stream()
                 .map(userStorage::getById)
                 .collect(Collectors.toList());
+    }
 
+    public Collection<User> findAll() {
+        return userStorage.findAll();
+    }
+
+    public User create(User user) {
+        validationEmptyFields(user);
+        validateFormat(user);
+        return userStorage.create(user);
+    }
+
+    public User update(@RequestBody User newUser) {
+        validateFormat(newUser);
+        return userStorage.update(newUser);
+    }
+
+    private void validationEmptyFields(User user) {
+        if (user.getEmail() == null) {
+            throw new ValidationException("Электронная почта не может быть пустой");
+        }
+        if (user.getLogin() == null) {
+            throw new ValidationException("Логин не может быть пустым");
+        }
+        if (user.getBirthday() == null) {
+            throw new ValidationException("Дата рождения должна быть указана");
+        }
+    }
+
+    private void validateFormat(User user) {
+        if (user.getEmail() != null && (!StringUtils.hasText(user.getEmail()) || !user.getEmail().contains("@"))) {
+            throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
+        }
+        if (user.getLogin() != null && (!StringUtils.hasText(user.getLogin()) || user.getLogin().contains(" "))) {
+            throw new ValidationException("Логин не может быть пустым и содержать пробелы");
+        }
+        if (user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())) {
+            throw new ValidationException("Дата рождения должна быть указана и не может быть в будущем");
+        }
     }
 }

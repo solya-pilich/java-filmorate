@@ -7,9 +7,8 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -70,6 +69,20 @@ public class InMemoryUserStorage implements UserStorage {
         }
         log.debug("Получен пользователь по ID {}", userId);
         return user;
+    }
+
+    @Override
+    public List<User> getAllFriends(Long userId) {
+        User user = getById(userId);
+        return user.getFriendsIds().stream()
+                .map(users::get)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Set<Long> getFriendsIds(Long userId) {
+        User user = getById(userId);
+        return new HashSet<>(user.getFriendsIds());
     }
 
     @Override

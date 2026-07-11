@@ -1,14 +1,10 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
@@ -17,18 +13,16 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 
-    private final UserStorage userStorage;
     private final UserService userService;
 
-    public UserController(UserStorage userStorage, UserService userService) {
-        this.userStorage = userStorage;
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 
     @GetMapping
     public Collection<User> findAll() {
         log.info("Запрос на получение всех пользователей");
-        Collection<User> users = userStorage.findAll();
+        Collection<User> users = userService.findAll();
         log.debug("Получен список пользователей: {}", users);
         return users;
     }
@@ -36,17 +30,7 @@ public class UserController {
     @PostMapping
     public User create(@RequestBody User user) {
         log.info("Запрос на создание нового пользователя: {}", user);
-        if (user.getEmail() == null) {
-            throw new ValidationException("Электронная почта не может быть пустой");
-        }
-        if (user.getLogin() == null) {
-            throw new ValidationException("Логин не может быть пустым");
-        }
-        if (user.getBirthday() == null) {
-            throw new ValidationException("Дата рождения должна быть указана");
-        }
-        validate(user);
-        User createdUser = userStorage.create(user);
+        User createdUser = userService.create(user);
         log.info("Пользователь создан: id={}, email={}", user.getId(), user.getEmail());
         return createdUser;
     }
@@ -54,8 +38,7 @@ public class UserController {
     @PutMapping
     public User update(@RequestBody User newUser) {
         log.info("Запрос на изменение пользователя {}", newUser);
-        validate(newUser);
-        User oldUser = userStorage.update(newUser);
+        User oldUser = userService.update(newUser);
         log.info("Пользователь {} обновлен", oldUser);
         return oldUser;
     }
@@ -84,17 +67,5 @@ public class UserController {
     public List<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
         log.info("Запрос на получения списка общих друзей пользователя {} и {}", id, otherId);
         return userService.getCommonFriends(id, otherId);
-    }
-
-    private void validate(User user) {
-        if (user.getEmail() != null && (!StringUtils.hasText(user.getEmail()) || !user.getEmail().contains("@"))) {
-            throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
-        }
-        if (user.getLogin() != null && (!StringUtils.hasText(user.getLogin()) || user.getLogin().contains(" "))) {
-            throw new ValidationException("Логин не может быть пустым и содержать пробелы");
-        }
-        if (user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())) {
-            throw new ValidationException("Дата рождения должна быть указана и не может быть в будущем");
-        }
     }
 }

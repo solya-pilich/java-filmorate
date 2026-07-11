@@ -8,7 +8,9 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -66,6 +68,37 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
         log.debug("Получен фильм по ID {}", filmId);
         return film;
+    }
+
+    @Override
+    public void addLike(Long filmId, Long userId) {
+        Film film = getById(filmId);
+
+        if (film.getWhoLikes().contains(userId)) {
+            log.warn("Пользователь {} уже поставил лайк фильму {}", userId, filmId);
+            return;
+        }
+        film.getWhoLikes().add(userId);
+    }
+
+    @Override
+    public void deleteLike(Long filmId, Long userId) {
+        Film film = getById(filmId);
+
+        if (!film.getWhoLikes().contains(userId)) {
+            log.warn("Пользователь {} не ставил лайк фильму {}", userId, filmId);
+            return;
+        }
+
+        film.getWhoLikes().remove(userId);
+    }
+
+    @Override
+    public List<Film> getTopFilms(int count) {
+        return findAll().stream()
+                .sorted((f1, f2) -> Integer.compare(f2.getWhoLikes().size(), f1.getWhoLikes().size()))
+                .limit(count)
+                .collect(Collectors.toList());
     }
 
     @Override
