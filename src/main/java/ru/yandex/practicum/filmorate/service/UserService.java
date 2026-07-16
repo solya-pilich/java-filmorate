@@ -57,12 +57,7 @@ public class UserService {
     }
 
     public List<User> getCommonFriends(Long userId1, Long userId2) {
-        Set<Long> users1Friends = userStorage.getFriendsIds(userId1);
-        Set<Long> users2Friends = userStorage.getFriendsIds(userId2);
-
-        Set<Long> commonsIds = users1Friends.stream()
-                .filter(users2Friends::contains)
-                .collect(Collectors.toSet());
+        Set<Long> commonsIds = userStorage.getCommonFriends(userId1, userId2);
 
         if (commonsIds.isEmpty()) {
             log.info("У пользователей {} и {} нет общих друзей", userId1, userId2);
