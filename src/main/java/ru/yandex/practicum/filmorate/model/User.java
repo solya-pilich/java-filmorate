@@ -23,5 +23,6 @@ public class User {
     private LocalDate birthday;
     @Builder.Default
     private Set<Long> friendsIds = new HashSet<>();
+    @Builder.Default
     private Map<Long, FriendshipStatus> friendshipStatusMap = new HashMap<>();
 }

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -35,6 +36,10 @@ public class UserService {
 
         user.getFriendsIds().add(friendId);
         friend.getFriendsIds().add(userId);
+
+        user.getFriendshipStatusMap().put(friendId, FriendshipStatus.CONFIRMED);
+        friend.getFriendshipStatusMap().put(userId, FriendshipStatus.CONFIRMED);
+
         log.debug("Пользователь {} и {} стали друзьями", userId, friendId);
     }
 
@@ -49,6 +54,10 @@ public class UserService {
 
         user.getFriendsIds().remove(friendId);
         friend.getFriendsIds().remove(userId);
+
+        user.getFriendshipStatusMap().remove(friendId);
+        user.getFriendshipStatusMap().remove(friendId);
+
         log.debug("Пользователь {} и {} перестали быть друзьями", userId, friendId);
     }
 
