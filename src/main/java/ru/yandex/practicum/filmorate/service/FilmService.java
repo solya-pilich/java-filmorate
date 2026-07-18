@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -29,8 +30,9 @@ public class FilmService {
     }
 
     public void addLike(Long filmId, Long userId) {
-        userStorage.getById(userId);
-        filmStorage.addLike(filmId, userId);
+        User user = userStorage.getById(userId);
+        Film film = filmStorage.getById(filmId);
+        filmStorage.addLike(film, user);
         log.debug("Пользователь {} поставил лайк фильму {}", userId, filmId);
     }
 
