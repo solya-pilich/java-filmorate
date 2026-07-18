@@ -56,7 +56,7 @@ public class UserService {
         friend.getFriendsIds().remove(userId);
 
         user.getFriendshipStatusMap().remove(friendId);
-        user.getFriendshipStatusMap().remove(friendId);
+        user.getFriendshipStatusMap().remove(userId);
 
         log.debug("Пользователь {} и {} перестали быть друзьями", userId, friendId);
     }

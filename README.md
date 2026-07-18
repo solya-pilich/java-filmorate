@@ -46,7 +46,7 @@ SELECT f.id, f.name, f.description, f.releaseDate, f.duration,
        mr.name AS mpa_rating,
        g.name AS genre_name
 FROM film AS f
-LEFT JOIN mpa_rating AS mr ON f.reting_id = mr.id
+LEFT JOIN mpa_rating AS mr ON f.rating_id = mr.id
 LEFT JOIN film_genre AS fg ON f.id = fg.film_id
 LEFT JOIN genre AS g ON fg.genre_id = g.id
 WHERE f.id = ?;
@@ -64,7 +64,7 @@ WHERE f1.user_id = 1 AND f2.user_id = 2;
 SELECT u.id, u.name, f.friendshipStatus
 FROM friendship AS f 
 JOIN user AS u ON u.id = f.friend_id
-WHERE f.user_id = ?;
+WHERE f.user_id = ?
 
 UNION
 
