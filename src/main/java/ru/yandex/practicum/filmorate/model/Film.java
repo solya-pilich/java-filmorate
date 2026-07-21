@@ -21,6 +21,7 @@ public class Film {
     private Integer duration;
     @Builder.Default
     private Set<Long> whoLikes = new HashSet<>();
-    private Set<Genre> genre;
+    @Builder.Default
+    private Set<Genre> genres = new HashSet<>();
     private MpaRating rating;
 }

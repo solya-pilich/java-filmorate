@@ -2,6 +2,9 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.user.NewUserRequest;
+import ru.yandex.practicum.filmorate.dto.user.UpdateUserRequest;
+import ru.yandex.practicum.filmorate.dto.user.UserDto;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -20,25 +23,25 @@ public class UserController {
     }
 
     @GetMapping
-    public Collection<User> findAll() {
+    public Collection<UserDto> findAll() {
         log.info("Запрос на получение всех пользователей");
-        Collection<User> users = userService.findAll();
+        Collection<UserDto> users = userService.findAll();
         log.debug("Получен список пользователей: {}", users);
         return users;
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
-        log.info("Запрос на создание нового пользователя: {}", user);
-        User createdUser = userService.create(user);
-        log.info("Пользователь создан: id={}, email={}", user.getId(), user.getEmail());
+    public UserDto create(@RequestBody NewUserRequest request) {
+        log.info("Запрос на создание нового пользователя: {}", request);
+        UserDto createdUser = userService.create(request);
+        log.info("Пользователь создан: id={}, email={}", createdUser.getId(), createdUser.getEmail());
         return createdUser;
     }
 
     @PutMapping
-    public User update(@RequestBody User newUser) {
-        log.info("Запрос на изменение пользователя {}", newUser);
-        User oldUser = userService.update(newUser);
+    public UserDto update(@RequestBody UpdateUserRequest request) {
+        log.info("Запрос на изменение пользователя {}", request);
+        UserDto oldUser = userService.update(request);
         log.info("Пользователь {} обновлен", oldUser);
         return oldUser;
     }
@@ -58,7 +61,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public List<User> getAllFriends(@PathVariable Long id) {
+    public List<UserDto> getAllFriends(@PathVariable Long id) {
         log.info("Запрос на получения списка друзей пользователя {}", id);
         return userService.getAllFriends(id);
     }

@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Component
+@Component("inMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
 
     private final Map<Long, User> users = new HashMap<>();
@@ -72,12 +72,24 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
+    public void addFriend(Long userId, Long friendId) {
+
+    }
+
+    @Override
+    public void deleteFriend(Long userId, Long friendId) {
+
+    }
+
+    @Override
     public List<User> getAllFriends(Long userId) {
         User user = getById(userId);
         return user.getFriendsIds().stream()
                 .map(users::get)
                 .collect(Collectors.toList());
     }
+
+
 
     @Override
     public Set<Long> getCommonFriends(Long user1Id, Long user2Id) {
@@ -94,12 +106,6 @@ public class InMemoryUserStorage implements UserStorage {
         return users1Friends.stream()
                 .filter(users2Friends::contains)
                 .collect(Collectors.toSet());
-    }
-
-    @Override
-    public void clear() {
-        users.clear();
-        log.debug("Произошла очистка хранилища пользователей");
     }
 
     private Long getNextId() {
