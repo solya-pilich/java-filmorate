@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.dal;
 
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -11,6 +12,9 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -67,9 +71,21 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             String genreSql = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
-            for (Genre genre : film.getGenres()) {
-                jdbc.update(genreSql, id, genre.getId());
-            }
+            List<Genre> genreList = new ArrayList<>(film.getGenres());
+
+            jdbc.batchUpdate(genreSql, new BatchPreparedStatementSetter() {
+                @Override
+                public void setValues(PreparedStatement ps, int i) throws SQLException {
+                    Genre genre = genreList.get(i);
+                    ps.setLong(1, film.getId());
+                    ps.setInt(2, genre.getId());
+                }
+
+                @Override
+                public int getBatchSize() {
+                    return genreList.size();
+                }
+            });
         }
 
         return getById(id);

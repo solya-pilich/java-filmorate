@@ -130,16 +130,19 @@ public class FilmService {
 
     private void validateGenres(Set<Genre> genres) {
         if (genres == null || genres.isEmpty()) return;
-        for (Genre genre : genres) {
-            if (genreDbStorage.findById(genre.getId()).isEmpty()) {
-                throw new NotFoundException("Жанр с id " + genre.getId() + " не найден");
-            }
+
+        Set<Integer> ids = genres.stream()
+                .map(Genre::getId)
+                .collect(Collectors.toSet());
+
+        if (!genreDbStorage.existsAllByIds(ids)) {
+            throw new NotFoundException("Указанные жанры не найдены");
         }
     }
 
     private void validateMpa(MpaRating mpa) {
         if (mpa == null) return;
-        if (mpaRatingDbStorage.findById(mpa.getId()).isEmpty()) {
+        if (!mpaRatingDbStorage.existsById(mpa.getId())) {
             throw new NotFoundException("MPA-рейтинг с id " + mpa.getId() + " не найден");
         }
     }

@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.model.MpaRating;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -48,9 +47,9 @@ public class FilmRowMapper implements RowMapper<Film> {
 
         String genreSql = "SELECT g.id, g.name FROM film_genre fg " +
                 "JOIN genre g ON fg.genre_id = g.id " +
-                "WHERE fg.film_id = ?";
+                "WHERE fg.film_id = ?" +
+                "ORDER BY g.id ";
         List<Genre> genres = jdbc.query(genreSql, genreMapper, film.getId());
-        genres.sort(Comparator.comparingInt(Genre::getId));
         film.setGenres(new LinkedHashSet<>(genres));
 
         return film;
