@@ -7,14 +7,11 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Component
+@Component("inMemoryFilmStorage")
 public class InMemoryFilmStorage implements FilmStorage {
 
     private final Map<Long, Film> films = new HashMap<>();
@@ -98,12 +95,6 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .sorted((f1, f2) -> Integer.compare(f2.getWhoLikes().size(), f1.getWhoLikes().size()))
                 .limit(count)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public void clear() {
-        films.clear();
-        log.debug("Произошла очистка хранилища фильмов");
     }
 
     private Long getNextId() {

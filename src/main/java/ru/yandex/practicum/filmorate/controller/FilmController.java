@@ -1,8 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.dto.film.FilmDto;
+import ru.yandex.practicum.filmorate.dto.film.NewFilmRequest;
+import ru.yandex.practicum.filmorate.dto.film.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
@@ -10,35 +13,44 @@ import java.util.List;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/films")
 public class FilmController {
 
     private final FilmService filmService;
 
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
 
     @GetMapping
-    public Collection<Film> findAll() {
+    public Collection<FilmDto> findAll() {
         log.info("Запрос на получение всех фильмов");
-        Collection<Film> films = filmService.findAll();
+        Collection<FilmDto> films = filmService.findAll();
         log.debug("Получен список фильмов {}", films);
         return films;
     }
 
+    @GetMapping("/{id}")
+    public FilmDto getFilmById(@PathVariable Long id) {
+        log.info("Запрос на получение фильма с id {}", id);
+        FilmDto film = filmService.getById(id);
+        log.debug("Получен фильм {}", film);
+        return film;
+    }
+
+
     @PostMapping
-    public Film create(@RequestBody Film film) {
-        log.info("Запрос на создание фильма {}", film);
-        Film createdFilm = filmService.create(film);
+    public FilmDto create(@RequestBody NewFilmRequest request) {
+        log.info("Received request: mpa = {}", request.getMpaRating()); //
+        log.info("Received request: genres = {}", request.getGenres());
+        log.info("Запрос на создание фильма {}", request);
+        FilmDto createdFilm = filmService.create(request);
         log.info("Фильм создан: id={}, name={}", createdFilm.getId(), createdFilm.getName());
         return createdFilm;
     }
 
     @PutMapping
-    public Film update(@RequestBody Film newFilm) {
-        log.info("Запрос на изменение фильма {}", newFilm);
-        Film updatedFilm = filmService.update(newFilm);
+    public FilmDto update(@RequestBody UpdateFilmRequest request) {
+        log.info("Запрос на изменение фильма {}", request);
+        FilmDto updatedFilm = filmService.update(request);
         log.info("Фильм {} обновлен", updatedFilm);
         return updatedFilm;
     }
@@ -59,7 +71,7 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getTopFilms(@RequestParam(defaultValue = "10") int count) {
+    public List<FilmDto> getTopFilms(@RequestParam(defaultValue = "10") int count) {
         log.info("Запрос на получение списка {} лучших фильмов", count);
         return filmService.getTopFilms(count);
     }
